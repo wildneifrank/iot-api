@@ -25,4 +25,19 @@ export namespace API {
       statusCode: HttpStatusCodes;
     }
   }
+  export namespace Firebase {
+    export interface DataAccessorInterface {
+      where<T>(key: keyof T, value: any): Promise<T[]>;
+      find<T>(id: number): Promise<T | null>;
+      create<T>(data: T): Promise<void>;
+      update<T>(id: number, data: Partial<T>): Promise<void>;
+      all<T>(): Promise<T[]>;
+      listen<T>(callback: (data: T[]) => void): void;
+    }
+    export enum DataPaths {
+      TEMP_SENSOR = "iot/devices/sensor1",
+      GPS_SENSOR = "iot/devices/sensor2",
+      USER = "iot/devices/users",
+    }
+  }
 }

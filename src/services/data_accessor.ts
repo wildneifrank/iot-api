@@ -1,70 +1,100 @@
-import fs from "fs-extra";
-import path from "path";
+import admin from "firebase-admin";
 import { API } from "types";
-import { fileURLToPath } from "url";
 
-type DataItem = API.Models.IDataItem;
+type DataAccessorInterface = API.Firebase.DataAccessorInterface;
+type dbInstance = admin.database.Database;
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+class DataAccessor implements DataAccessorInterface {
+  private db: dbInstance;
+  private refPath: string;
 
-class DataAccessor {
-  private filePath: string;
-
-  constructor() {
-    this.filePath = path.join(__dirname, "..", "database", "data.json");
+  constructor(dbInstance: dbInstance, refPath: string) {
+    this.db = dbInstance;
+    this.refPath = refPath;
   }
 
-  // Method to read data from JSON file
-  public async readData(): Promise<DataItem[]> {
-    const data = await fs.readFile(this.filePath, "utf-8");
-    return JSON.parse(data) as DataItem[];
+  async where<T>(key: keyof T, value: any): Promise<T[]> {
+    try {
+      const ref = this.db.ref(this.refPath);
+      const snapshot = await ref
+        .orderByChild(key as string)
+        .equalTo(value)
+        .once("value");
+      const data: T[] = [];
+      snapshot.forEach((child) => {
+        data.push(child.val());
+      });
+      return data;
+    } catch (error) {
+      console.error(`Failed to query data at path "${this.refPath}":`, error);
+      return [];
+    }
   }
 
-  // Method to write data to JSON file
-  private async writeData(data: DataItem[]): Promise<void> {
-    await fs.writeFile(this.filePath, JSON.stringify(data, null, 2));
+  async find<T>(id: number): Promise<T | null> {
+    try {
+      const ref = this.db.ref(`${this.refPath}/${id}`);
+      const snapshot = await ref.once("value");
+      return snapshot.val();
+    } catch (error) {
+      console.error(
+        `Failed to fetch item with ID ${id} at path "${this.refPath}":`,
+        error
+      );
+      return null;
+    }
   }
 
-  // Method to add a new item and return its ID
-  public async create(item: DataItem): Promise<number> {
-    const data = await this.readData();
-    data.push(item);
-    await this.writeData(data);
-    return item.id; // Return the ID of the added item
+  async create<T>(data: T): Promise<void> {
+    try {
+      const ref = this.db.ref(this.refPath);
+      await ref.push(data);
+    } catch (error) {
+      console.error(`Failed to create data at path "${this.refPath}":`, error);
+      throw error;
+    }
   }
 
-  // Method to update an existing item
-  public async update(id: number, updates: Partial<DataItem>): Promise<void> {
-    const data = await this.readData();
-    const index = data.findIndex((item) => item.id === id);
-    if (index === -1) throw new Error("Item not found");
-    data[index] = { ...data[index], ...updates };
-    await this.writeData(data);
+  async update<T>(id: number, data: Partial<T>): Promise<void> {
+    try {
+      const ref = this.db.ref(`${this.refPath}/${id}`);
+      await ref.update(data);
+    } catch (error) {
+      console.error(
+        `Failed to update data with ID ${id} at path "${this.refPath}":`,
+        error
+      );
+      throw error;
+    }
   }
 
-  // Method to delete an item
-  public async delete(id: number): Promise<void> {
-    const data = await this.readData();
-    const updatedData = data.filter((item) => item.id !== id);
-    await this.writeData(updatedData);
+  async all<T>(): Promise<T[]> {
+    try {
+      const ref = this.db.ref(this.refPath);
+      const snapshot = await ref.once("value");
+      const data: T[] = [];
+      snapshot.forEach((child) => {
+        data.push(child.val());
+      });
+      return data;
+    } catch (error) {
+      console.error(
+        `Failed to fetch all data from path "${this.refPath}":`,
+        error
+      );
+      return [];
+    }
   }
 
-  // Method to find an item by id
-  public async find(id: number): Promise<DataItem | null> {
-    const data = await this.readData();
-    return data.find((item) => item.id === id) || null;
-  }
-
-  // Method to find items that match a specific field and value
-  public async where(field: keyof DataItem, value: any): Promise<DataItem[]> {
-    const data = await this.readData();
-    return data.filter((item) => item[field] === value);
-  }
-
-  // Method to return all data
-  public async all(): Promise<DataItem[]> {
-    return await this.readData();
+  listen<T>(callback: (data: T[]) => void): void {
+    const ref = this.db.ref(this.refPath);
+    ref.on("value", (snapshot) => {
+      const data: T[] = [];
+      snapshot.forEach((child) => {
+        data.push(child.val());
+      });
+      callback(data);
+    });
   }
 }
 

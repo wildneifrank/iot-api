@@ -4,6 +4,6 @@ import { Router } from "express";
 const routes = Router();
 
 // ---------------------------------------- PUBLIC ROUTES ---------------------------------------- //
-routes.get("/data", DataController.data);
+routes.get("/", DataController.getAll);
 
 export default routes;

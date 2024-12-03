@@ -4,36 +4,7 @@ import { API } from "types";
 import { sendResponse } from "utils/response";
 
 class DataController {
-  async create(req: Request, res: Response) {
-    const { title } = req.body as { title: string };
-
-    try {
-      const result = await Data.create(title);
-
-      if (result) {
-        sendResponse(
-          res,
-          API.Express.HttpStatusCodes.OK,
-          "Data created successfully"
-        );
-      } else {
-        sendResponse(
-          res,
-          API.Express.HttpStatusCodes.BAD_REQUEST,
-          "Failed to create data"
-        );
-      }
-    } catch (error) {
-      console.error("Error in creating data:", error);
-      sendResponse(
-        res,
-        API.Express.HttpStatusCodes.INTERNAL_SERVER_ERROR,
-        "An unexpected error occurred"
-      );
-    }
-  }
-
-  async data(req: Request, res: Response) {
+  async getAll(req: Request, res: Response) {
     try {
       const data = await Data.all();
 

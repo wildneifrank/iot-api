@@ -1,62 +1,74 @@
-// src/models/transfer.ts
 import DataAccessor from "services/data_accessor";
 import { API } from "types";
+import { db } from "database/db";
 
-const dataAccessor = new DataAccessor();
+const dataAccessor: API.Firebase.DataAccessorInterface = new DataAccessor(
+  db,
+  API.Firebase.DataPaths.TEMP_SENSOR
+);
 
-type DataItem = API.Models.IDataItem;
-
-export class Data {
-  static async where(params: Partial<DataItem>): Promise<DataItem[]> {
-    const keys = Object.keys(params) as (keyof DataItem)[];
-    let data: DataItem[] = [];
+export class Data<T = any> {
+  static async where<T extends Record<string, any>>(
+    params: Partial<T>
+  ): Promise<T[]> {
+    const keys = Object.keys(params) as (keyof T)[];
+    let data: T[] = [];
 
     for (const key of keys) {
       const value = params[key];
       if (value !== undefined) {
-        const transfersByField = await dataAccessor.where(key, value);
-        data.push(...transfersByField);
+        const items = await dataAccessor.where(key, value);
+        data.push(...items);
       }
     }
 
-    // Remove duplicates based on ID
+    // Remove duplicates based on ID if an `id` field exists
     data = data.filter(
-      (transfer, index, self) =>
-        index === self.findIndex((u) => u.id === transfer.id)
+      (item, index, self) =>
+        !("id" in item) || // Ensure 'id' exists in the item
+        index === self.findIndex((u) => "id" in u && u.id === item.id)
     );
 
     return data;
   }
 
-  static async find(id: number): Promise<DataItem | null> {
-    const data = await dataAccessor.find(id);
-    return data;
+  static async find<T>(id: number): Promise<T | null> {
+    return await dataAccessor.find<T>(id);
   }
 
-  static async create(title: string): Promise<boolean> {
+  static async create<T>(data: T): Promise<boolean> {
     try {
-      const data = await this.all(); // Fetch all items
-      const lastId = data.length > 0 ? data[data.length - 1].id : 0; // Get the last item's ID or default to 0
-      const newData: DataItem = { id: lastId + 1, title, votes_amount: 0 };
-      await dataAccessor.create(newData);
+      await dataAccessor.create(data);
       return true;
     } catch (error) {
-      console.error("Failed to create data item:", error); // Descriptive error logging
-      return false; // Only returns false if an error occurs
+      console.error("Failed to create data item:", error);
+      return false;
     }
   }
 
-  static async update(id: number, data: Partial<DataItem>): Promise<void> {
-    await dataAccessor.update(id, data);
+  static async update<T>(id: number, data: Partial<T>): Promise<void> {
+    try {
+      await dataAccessor.update(id, data);
+    } catch (error) {
+      console.error(`Failed to update item with ID ${id}:`, error);
+      throw error;
+    }
   }
 
-  static async all(): Promise<DataItem[]> {
+  static async all<T>(): Promise<T[]> {
     try {
-      const data = await dataAccessor.all();
-      return data;
+      return await dataAccessor.all<T>();
     } catch (error) {
       console.error("Failed to fetch all data items:", error);
-      return []; // Return an empty array if an error occurs
+      return [];
+    }
+  }
+
+  static listen<T>(callback: (data: T[]) => void): void {
+    try {
+      dataAccessor.listen(callback);
+    } catch (error) {
+      console.error("Failed to listen for data changes:", error);
     }
   }
 }
