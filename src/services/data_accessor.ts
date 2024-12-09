@@ -1,14 +1,12 @@
 import admin from "firebase-admin";
 import { API } from "types";
+import { DbInstance, IDataAccessor } from "types/types";
 
-type DataAccessorInterface = API.Firebase.DataAccessorInterface;
-type dbInstance = admin.database.Database;
-
-class DataAccessor implements DataAccessorInterface {
-  private db: dbInstance;
+class DataAccessor implements IDataAccessor {
+  private db: DbInstance;
   private refPath: string;
 
-  constructor(dbInstance: dbInstance, refPath: string) {
+  constructor(dbInstance: DbInstance, refPath: string) {
     this.db = dbInstance;
     this.refPath = refPath;
   }
@@ -83,6 +81,31 @@ class DataAccessor implements DataAccessorInterface {
         error
       );
       return [];
+    }
+  }
+
+  async delete(id: number): Promise<void> {
+    try {
+      const ref = this.db.ref(this.refPath);
+
+      // Query the database to find the user with the specified property
+      const snapshot = await ref.orderByChild("id").equalTo(id).once("value");
+
+      if (!snapshot.exists()) {
+        throw new Error("No data found");
+      }
+
+      // Iterate over matching users and delete by their unique keys
+      snapshot.forEach((child) => {
+        const key = child.key;
+        if (key) {
+          ref.child(key).remove();
+          console.log(`Successfully deleted data with key: ${key}`);
+        }
+      });
+    } catch (error) {
+      console.error(`Failed to delete data by id = ${id}:`, error);
+      throw error;
     }
   }
 

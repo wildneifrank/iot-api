@@ -1,11 +1,11 @@
 import DataAccessor from "services/data_accessor";
 import { db } from "database/db";
-import { IDataAccessor } from "types/types";
+import { IDataAccessor, IUser } from "types/types";
 import { DataPaths } from "types/enums";
 
-const dataAccessor: IDataAccessor = new DataAccessor(db, DataPaths.TEMP_SENSOR);
+const dataAccessor: IDataAccessor = new DataAccessor(db, DataPaths.USER);
 
-export class Data<T = any> {
+export class User<T = any> {
   static async where<T extends Record<string, any>>(
     params: Partial<T>
   ): Promise<T[]> {
@@ -34,8 +34,9 @@ export class Data<T = any> {
     return await dataAccessor.find<T>(id);
   }
 
-  static async create<T>(data: T): Promise<boolean> {
+  static async create<T extends IUser>(data: T): Promise<boolean> {
     try {
+      data.id = await this.getIndex();
       await dataAccessor.create(data);
       return true;
     } catch (error) {
@@ -62,11 +63,39 @@ export class Data<T = any> {
     }
   }
 
+  static async delete<T extends number>(id: T): Promise<boolean> {
+    try {
+      await dataAccessor.delete(id);
+      return true;
+    } catch (error) {
+      console.error(`Failed to delete item with ID ${id}:`, error);
+      return false;
+    }
+  }
+
   static listen<T>(callback: (data: T[]) => void): void {
     try {
       dataAccessor.listen(callback);
     } catch (error) {
       console.error("Failed to listen for data changes:", error);
+    }
+  }
+
+  static async getIndex(): Promise<number> {
+    try {
+      // Fetch all users
+      const users = await dataAccessor.all<IUser>();
+
+      // Find the highest id
+      const lastIndex = users.reduce(
+        (max, user) => (user.id > max ? user.id : max),
+        0
+      );
+
+      return lastIndex + 1;
+    } catch (error) {
+      console.error("Failed to retrieve the last index:", error);
+      throw error;
     }
   }
 }

@@ -7,6 +7,7 @@ admin.initializeApp({
 });
 
 export const db = admin.database();
+export const auth = admin.auth();
 
 const testConnection = async () => {
   const ref = db.ref("/");
