@@ -1,4 +1,3 @@
-import DataController from "controllers/data_controller";
 import AuthController from "controllers/auth_controller";
 import UserController from "controllers/user_controller";
 
@@ -10,10 +9,11 @@ const routes = Router();
 
 // Users
 routes.get("/users", UserController.users);
+routes.get("/user/:email", UserController.user);
+routes.put("/user", UserController.update);
 routes.post("/user", UserController.create);
-routes.delete("/user/:id", UserController.delete);
+routes.delete("/user/:key", UserController.delete);
 
-routes.get("/", DataController.getAll);
 routes.post("/generateTestToken", AuthController.generateTestToken);
 
 export default routes;

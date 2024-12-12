@@ -55,7 +55,6 @@ async function verifyUserToken(
   idToken: string
 ): Promise<DecodedIdToken | null> {
   try {
-    console.log(idToken);
     const decodedToken = await auth.verifyIdToken(idToken, true);
     console.log("Decoded Token:", decodedToken);
     return decodedToken;

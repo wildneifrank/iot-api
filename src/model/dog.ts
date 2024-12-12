@@ -1,11 +1,11 @@
 import DataAccessor from "services/data_accessor";
 import { db } from "database/db";
-import { IDataAccessor } from "types/types";
+import { IDataAccessor, IDog } from "types/types";
 import { DataPaths } from "types/enums";
 
-const dataAccessor: IDataAccessor = new DataAccessor(db, DataPaths.TEMP_SENSOR);
+const dataAccessor: IDataAccessor = new DataAccessor(db, DataPaths.DOGS);
 
-export class Data<T = any> {
+export class Dog<T = any> {
   static async where<T extends Record<string, any>>(
     params: Partial<T>
   ): Promise<T[]> {
@@ -19,24 +19,16 @@ export class Data<T = any> {
         data.push(...items);
       }
     }
-
-    // Remove duplicates based on ID if an `id` field exists
-    data = data.filter(
-      (item, index, self) =>
-        !("id" in item) || // Ensure 'id' exists in the item
-        index === self.findIndex((u) => "id" in u && u.id === item.id)
-    );
-
     return data;
   }
 
-  static async find<T>(id: number): Promise<T | null> {
-    return await dataAccessor.find<T>(id);
+  static async find<T>(key: string): Promise<T | null> {
+    return await dataAccessor.find<T>(key);
   }
 
-  static async create<T>(data: T): Promise<boolean> {
+  static async create<T extends IDog>(data: T): Promise<boolean> {
     try {
-      await dataAccessor.create(data);
+      await dataAccessor.create<IDog>(data);
       return true;
     } catch (error) {
       console.error("Failed to create data item:", error);
@@ -44,11 +36,11 @@ export class Data<T = any> {
     }
   }
 
-  static async update<T>(id: number, data: Partial<T>): Promise<void> {
+  static async update<T>(key: string, data: Partial<T>): Promise<void> {
     try {
-      await dataAccessor.update(id, data);
+      await dataAccessor.update(key, data);
     } catch (error) {
-      console.error(`Failed to update item with ID ${id}:`, error);
+      console.error(`Failed to update item with ID ${key}:`, error);
       throw error;
     }
   }
@@ -59,6 +51,16 @@ export class Data<T = any> {
     } catch (error) {
       console.error("Failed to fetch all data items:", error);
       return [];
+    }
+  }
+
+  static async delete<T extends string>(key: T): Promise<boolean> {
+    try {
+      await dataAccessor.delete(key);
+      return true;
+    } catch (error) {
+      console.error(`Failed to delete item with ID ${key}:`, error);
+      return false;
     }
   }
 

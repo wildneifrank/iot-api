@@ -1,20 +1,29 @@
 import { Request } from "express";
+import { IUser } from "./types";
 
 export namespace API {
   // Models namespace for application-specific data structures
   export namespace Models {
     /**
-     * Represents a generic data item with ID, title, and votes amount.
+     * Represents the core data models for the system.
      */
-    export interface IDataItem {
-      id: number;
-      title: string;
-      votes_amount: number;
-    }
     export interface IUser {
-      id: number;
       name: string;
       email: string;
+      tel: string;
+    }
+    export interface IDog {
+      ownerId: string;
+      name: string;
+      age: string;
+      breed: string;
+      sensors: ISensor[];
+    }
+    export interface ISensor {
+      id: string;
+      data: Record<string, any>;
+      lastUpdated: string;
+      history?: Array<{ timestamp: string; data: Record<string, any> }>;
     }
   }
 
@@ -38,9 +47,16 @@ export namespace API {
      */
     export enum ResponseMessages {
       TOKEN_REQUIRED = "Token is required",
+      KEY_REQUIRED = "Key is required",
+      EMAIL_REQUIRED = "Email is required to fetch user",
       TOKEN_INVALID = "Token is invalid",
       TOKEN_VALID = "Token is valid",
       UNEXPECTED_ERROR = "An unexpected error occurred",
+      USER_UPDATED = "User updated successfully",
+      USER_CREATED = "User created successfully",
+      USER_DELETED = "User deleted successfully",
+      USER_NOT_FOUND = "User not found",
+      USER_ALREADY_EXISTS = "User with this email already exists",
     }
 
     /**
@@ -64,7 +80,20 @@ export namespace API {
       }
       export interface IDeleteUser extends Request {
         params: {
-          id: string;
+          key: string;
+        };
+      }
+      export interface ICreateUser extends Request {
+        body: IUser;
+      }
+      export interface IUpdateUser extends Request {
+        body: {
+          key: string;
+        } & Partial<IUser>;
+      }
+      export interface IGetUser extends Request {
+        params: {
+          email: string;
         };
       }
     }
@@ -87,11 +116,12 @@ export namespace API {
      */
     export interface IDataAccessor {
       where<T>(key: keyof T, value: any): Promise<T[]>;
-      find<T>(id: number): Promise<T | null>;
+      find<T>(id: string): Promise<T | null>;
       create<T>(data: T): Promise<void>;
-      update<T>(id: number, data: Partial<T>): Promise<void>;
-      delete(id: number): Promise<void>;
+      update<T>(key: string, data: Partial<T>): Promise<void>;
+      delete(key: string): Promise<void>;
       all<T>(): Promise<T[]>;
+      getKey<T>(key: keyof T, value: any): Promise<string | null>;
       listen<T>(callback: (data: T[]) => void): void;
     }
 
@@ -101,7 +131,8 @@ export namespace API {
     export enum DataPaths {
       TEMP_SENSOR = "iot/devices/sensor1",
       GPS_SENSOR = "iot/devices/sensor2",
-      USER = "iot/users",
+      USERS = "iot/users",
+      DOGS = "iot/dogs",
     }
   }
 }
