@@ -15,6 +15,9 @@ export type IDeleteUser = API.Express.RequestBodies.IDeleteUser;
 export type IUpdateUser = API.Express.RequestBodies.IUpdateUser;
 
 export type IGetUser = API.Express.RequestBodies.IGetUser;
+
+export type ICreateDog = API.Express.RequestBodies.ICreateDog;
+
 /**
  * Firebase
  */

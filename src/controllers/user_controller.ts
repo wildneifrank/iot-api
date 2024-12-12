@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { User } from "model/user";
+import { UpdateUserSchema, UserSchema } from "schema";
 import { HttpStatusCodes, ResponseMessages } from "types/enums";
 import {
   ICreateUser,
@@ -29,7 +30,19 @@ class UserController {
 
   async create(req: ICreateUser, res: Response): Promise<void> {
     try {
-      const user: IUser = req.body;
+      const validationResult = UserSchema.safeParse(req.body);
+
+      if (!validationResult.success) {
+        sendResponse(
+          res,
+          HttpStatusCodes.BAD_REQUEST,
+          ResponseMessages.DATA_INVALID,
+          validationResult.error.format()
+        );
+        return;
+      }
+
+      const user: IUser = validationResult.data;
 
       const userAlreadyExists = await User.where<IUser>({ email: user.email });
 
@@ -65,7 +78,21 @@ class UserController {
 
   async update(req: IUpdateUser, res: Response): Promise<void> {
     try {
-      const { key, ...data } = req.body as { key: string } & Partial<IUser>;
+      const validationResult = UpdateUserSchema.safeParse(req.body);
+
+      if (!validationResult.success) {
+        sendResponse(
+          res,
+          HttpStatusCodes.BAD_REQUEST,
+          ResponseMessages.DATA_INVALID,
+          validationResult.error.format()
+        );
+        return;
+      }
+
+      const { key, ...data } = validationResult.data as {
+        key: string;
+      } & Partial<IUser>;
 
       if (!key) {
         sendResponse(

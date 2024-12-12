@@ -9,36 +9,42 @@ export class Dog<T = any> {
   static async where<T extends Record<string, any>>(
     params: Partial<T>
   ): Promise<T[]> {
-    const keys = Object.keys(params) as (keyof T)[];
-    let data: T[] = [];
+    try {
+      const keys = Object.keys(params) as (keyof T)[];
+      let data: T[] = [];
 
-    for (const key of keys) {
-      const value = params[key];
-      if (value !== undefined) {
-        const items = await dataAccessor.where(key, value);
-        data.push(...items);
+      for (const key of keys) {
+        const value = params[key];
+        if (value !== undefined) {
+          const items = await dataAccessor.where(key, value);
+          data.push(...items);
+        }
       }
+
+      return data;
+    } catch (error) {
+      return [];
     }
-    return data;
   }
 
   static async find<T>(key: string): Promise<T | null> {
     return await dataAccessor.find<T>(key);
   }
 
-  static async create<T extends IDog>(data: T): Promise<boolean> {
+  static async create<T extends IDog>(data: T): Promise<void> {
     try {
       await dataAccessor.create<IDog>(data);
-      return true;
+      return;
     } catch (error) {
       console.error("Failed to create data item:", error);
-      return false;
+      throw error;
     }
   }
 
   static async update<T>(key: string, data: Partial<T>): Promise<void> {
     try {
       await dataAccessor.update(key, data);
+      return;
     } catch (error) {
       console.error(`Failed to update item with ID ${key}:`, error);
       throw error;
@@ -54,13 +60,13 @@ export class Dog<T = any> {
     }
   }
 
-  static async delete<T extends string>(key: T): Promise<boolean> {
+  static async delete<T extends string>(key: T): Promise<void> {
     try {
       await dataAccessor.delete(key);
-      return true;
+      return;
     } catch (error) {
       console.error(`Failed to delete item with ID ${key}:`, error);
-      return false;
+      throw error;
     }
   }
 

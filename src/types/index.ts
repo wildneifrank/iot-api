@@ -1,5 +1,5 @@
 import { Request } from "express";
-import { IUser } from "./types";
+import { IDog, IUser } from "./types";
 
 export namespace API {
   // Models namespace for application-specific data structures
@@ -15,7 +15,7 @@ export namespace API {
     export interface IDog {
       ownerId: string;
       name: string;
-      age: string;
+      age: number;
       breed: string;
       sensors: ISensor[];
     }
@@ -51,12 +51,14 @@ export namespace API {
       EMAIL_REQUIRED = "Email is required to fetch user",
       TOKEN_INVALID = "Token is invalid",
       TOKEN_VALID = "Token is valid",
+      DATA_INVALID = "Data format is invalid",
       UNEXPECTED_ERROR = "An unexpected error occurred",
       USER_UPDATED = "User updated successfully",
       USER_CREATED = "User created successfully",
       USER_DELETED = "User deleted successfully",
       USER_NOT_FOUND = "User not found",
       USER_ALREADY_EXISTS = "User with this email already exists",
+      DOG_CREATED = "Dog created successfully",
     }
 
     /**
@@ -95,6 +97,9 @@ export namespace API {
         params: {
           email: string;
         };
+      }
+      export interface ICreateDog extends Request {
+        body: IDog;
       }
     }
 
