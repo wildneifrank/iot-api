@@ -11,7 +11,6 @@ export const sendResponse = <T>(
   const responseBody: API.Express.IApiResponse<T> = {
     message,
     data,
-    statusCode,
   };
 
   return res.status(statusCode).json(responseBody);

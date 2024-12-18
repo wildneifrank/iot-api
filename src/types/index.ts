@@ -13,11 +13,11 @@ export namespace API {
       tel: string;
     }
     export interface IDog {
-      ownerId: string;
+      ownerKey: string;
       name: string;
       age: number;
       breed: string;
-      sensors: ISensor[];
+      sensors: string[];
     }
     export interface ISensor {
       id: string;
@@ -59,6 +59,9 @@ export namespace API {
       USER_NOT_FOUND = "User not found",
       USER_ALREADY_EXISTS = "User with this email already exists",
       DOG_CREATED = "Dog created successfully",
+      DOG_UPDATED = "Dog updated successfully",
+      DOG_DELETED = "Dog deleted successfully",
+      DOG_NOT_FOUND = "Dog not found",
     }
 
     /**
@@ -68,6 +71,11 @@ export namespace API {
       /**
        * Request interface for token verification.
        */
+      export interface IDelete extends Request {
+        params: {
+          key: string;
+        };
+      }
       export interface IVerifyTokenRequest<T = unknown> extends Request {
         body: {
           token: string;
@@ -78,11 +86,6 @@ export namespace API {
       export interface IGenerateTestToken extends Request {
         body: {
           uid: string;
-        };
-      }
-      export interface IDeleteUser extends Request {
-        params: {
-          key: string;
         };
       }
       export interface ICreateUser extends Request {
@@ -101,6 +104,16 @@ export namespace API {
       export interface ICreateDog extends Request {
         body: IDog;
       }
+      export interface IGetDog extends Request {
+        params: {
+          ownerKey: string;
+        };
+      }
+      export interface IUpdateDog extends Request {
+        body: {
+          key: string;
+        } & Partial<IDog>;
+      }
     }
 
     /**
@@ -110,7 +123,6 @@ export namespace API {
     export interface IApiResponse<T = null> {
       message?: string;
       data?: T | null;
-      statusCode: HttpStatusCodes;
     }
   }
 
@@ -134,8 +146,7 @@ export namespace API {
      * Enumeration of Firebase data paths.
      */
     export enum DataPaths {
-      TEMP_SENSOR = "iot/devices/sensor1",
-      GPS_SENSOR = "iot/devices/sensor2",
+      SENSORS = "iot/users",
       USERS = "iot/users",
       DOGS = "iot/dogs",
     }

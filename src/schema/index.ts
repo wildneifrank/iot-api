@@ -1,25 +1,11 @@
 import { z } from "zod";
 
 export const DogSchema = z.object({
-  ownerId: z.string(),
+  ownerKey: z.string(),
   name: z.string(),
   age: z.number().int().nonnegative(),
   breed: z.string(),
-  sensors: z.array(
-    z.object({
-      id: z.string(),
-      data: z.record(z.any()),
-      lastUpdated: z.string(),
-      history: z
-        .array(
-          z.object({
-            timestamp: z.string(),
-            data: z.record(z.any()),
-          })
-        )
-        .optional(),
-    })
-  ),
+  sensors: z.array(z.string()).default([]),
 });
 
 export const UserSchema = z.object({
@@ -34,5 +20,9 @@ export const UserSchema = z.object({
 });
 
 export const UpdateUserSchema = UserSchema.partial().extend({
+  key: z.string().min(1, "Key is required"),
+});
+
+export const UpdateDogSchema = DogSchema.partial().extend({
   key: z.string().min(1, "Key is required"),
 });

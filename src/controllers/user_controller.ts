@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
-import { User } from "model/user";
+import User from "model/user";
 import { UpdateUserSchema, UserSchema } from "schema";
 import { HttpStatusCodes, ResponseMessages } from "types/enums";
 import {
   ICreateUser,
-  IDeleteUser,
+  IDelete,
   IGetUser,
   IUpdateUser,
   IUser,
@@ -140,7 +140,7 @@ class UserController {
     }
   }
 
-  async delete(req: IDeleteUser, res: Response): Promise<void> {
+  async delete(req: IDelete, res: Response): Promise<void> {
     try {
       const { key } = req.params as { key: string };
 

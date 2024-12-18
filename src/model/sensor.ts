@@ -1,13 +1,13 @@
+import { ISensor } from "types/types";
+import { Entity } from "./entity";
 import DataAccessor from "services/data_accessor";
 import { db } from "database/db";
-import { IUser } from "types/types";
 import { DataPaths } from "types/enums";
-import { Entity } from "./entity";
 
-class User extends Entity<IUser> {
+class Sensor extends Entity<ISensor> {
   constructor() {
     super(new DataAccessor(db, DataPaths.SENSORS));
   }
 }
 
-export default new User();
+export default new Sensor();
