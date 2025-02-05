@@ -20,10 +20,11 @@ export namespace API {
       sensors: string[];
     }
     export interface ISensor {
-      id: string;
-      data: Record<string, any>;
-      lastUpdated: string;
-      history?: Array<{ timestamp: string; data: Record<string, any> }>;
+      temperature: number;
+      ageGroup: number;
+      sex: number;
+      timestamp: number;
+      heartbeat: number;
     }
   }
 
@@ -146,7 +147,7 @@ export namespace API {
      * Enumeration of Firebase data paths.
      */
     export enum DataPaths {
-      SENSORS = "iot/users",
+      SENSORS = "sensors/data",
       USERS = "iot/users",
       DOGS = "iot/dogs",
     }

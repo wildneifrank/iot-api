@@ -130,7 +130,8 @@ class DogController {
         return;
       }
 
-      const dogs = await Dog.where<IDog>({ ownerKey });
+      // const dogs = await Dog.where<IDog>({ ownerKey });
+      const dogs = await Dog.where({ ownerKey });
 
       if (dogs.length === 0) {
         sendResponse(
