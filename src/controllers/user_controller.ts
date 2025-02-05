@@ -44,7 +44,7 @@ class UserController {
 
       const user: IUser = validationResult.data;
 
-      const userAlreadyExists = await User.where<IUser>({ email: user.email });
+      const userAlreadyExists = await User.where({ email: user.email });
 
       if (userAlreadyExists.length > 0) {
         sendResponse(
@@ -105,7 +105,7 @@ class UserController {
       }
 
       if (data.email) {
-        const userAlreadyExists = await User.where<IUser>({
+        const userAlreadyExists = await User.where({
           email: data.email,
         });
 
@@ -180,7 +180,7 @@ class UserController {
         return;
       }
 
-      const users = await User.where<IUser>({ email });
+      const users = await User.where({ email });
 
       if (users.length === 0) {
         sendResponse(

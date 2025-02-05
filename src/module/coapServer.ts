@@ -9,6 +9,17 @@ const heartbeatMeasurements: number[] = [];
 const coapServer = coap.createServer((req, res) => {
   console.log(`Received request for ${req.url} with method ${req.method}`);
 
+  if (req.method === "GET") {
+    res.setOption("Content-Format", "application/json");
+    res.end(
+      JSON.stringify({
+        status: "success",
+        message: "CoAP server is running!",
+      })
+    );
+    return;
+  }
+
   if (req.method === "POST") {
     try {
       // Parse CoAP payload
