@@ -3,6 +3,7 @@ import http from "http";
 import routes from "./routes/routes";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import "module/coapServer";
 
 const app: Express = express();
 const PORT = process.env.PORT || 8000;
@@ -25,7 +26,7 @@ app.use(routes);
 // Create HTTP server
 const server = http.createServer(app);
 
-// Start the server
+// Start the HTTP server
 server.listen(PORT, () => {
-  console.log(`Server is running at http://localhost:${PORT}`);
+  console.log(`HTTP server is running at http://localhost:${PORT}`);
 });
