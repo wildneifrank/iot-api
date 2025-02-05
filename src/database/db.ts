@@ -14,7 +14,13 @@ const testConnection = async () => {
   ref
     .once("value")
     .then((snapshot) => {
-      console.log("Connected successfully. Data:", snapshot.val());
+      const data = snapshot.val(); // Get the data from the snapshot
+      if (data) {
+        const numberOfEntries = Object.keys(data.sensors.data).length; // Count the keys in the data object
+        console.log("Number of entries:", numberOfEntries);
+      } else {
+        console.log("No data available.");
+      }
     })
     .catch((error) => {
       console.error("Connection failed:", error);
