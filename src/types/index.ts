@@ -24,6 +24,7 @@ export namespace API {
       ageGroup: number;
       sex: number;
       timestamp: number;
+      oximetry: number;
       heartbeat: number;
     }
   }
@@ -147,7 +148,7 @@ export namespace API {
      * Enumeration of Firebase data paths.
      */
     export enum DataPaths {
-      SENSORS = "sensors/data",
+      SENSORS = "sensors/database",
       USERS = "iot/users",
       DOGS = "iot/dogs",
     }

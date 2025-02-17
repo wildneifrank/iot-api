@@ -13,12 +13,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.set("trust proxy", 1);
-app.use(
-  cors({
-    origin: process.env.REACT_APP_URL,
-    credentials: true,
-  })
-);
+app.use(cors());
 
 // Routes setup
 app.use(routes);

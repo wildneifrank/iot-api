@@ -16,7 +16,7 @@ const testConnection = async () => {
     .then((snapshot) => {
       const data = snapshot.val(); // Get the data from the snapshot
       if (data) {
-        const numberOfEntries = Object.keys(data.sensors.data).length; // Count the keys in the data object
+        const numberOfEntries = Object.keys(data.sensors.database).length; // Count the keys in the data object
         console.log("Number of entries:", numberOfEntries);
       } else {
         console.log("No data available.");

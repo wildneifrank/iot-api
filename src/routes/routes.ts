@@ -7,5 +7,6 @@ const routes = Router();
 
 // Sensors
 routes.get("/sensors", SensorController.sensors);
+routes.get("/sensors/latest", SensorController.latestSensor);
 
 export default routes;
