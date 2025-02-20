@@ -4,6 +4,7 @@ import { ISensor } from "types/types";
 
 const tempMeasurements: number[] = [];
 const heartbeatMeasurements: number[] = [];
+const oximetryMeasurements: number[] = [];
 
 // CoAP server setup
 const coapServer = coap.createServer((req, res) => {
@@ -24,15 +25,15 @@ const coapServer = coap.createServer((req, res) => {
     try {
       // Parse CoAP payload
       const payload = JSON.parse(req.payload.toString());
-      const { path, data } = payload as { path: string; data: ISensor };
+      const data: ISensor = payload;
 
       console.log("Parsed Payload:", payload);
 
       if (
-        !path ||
         !data ||
         typeof data.temperature !== "number" ||
         typeof data.heartbeat !== "number" ||
+        typeof data.oximetry !== "number" || // Validação adicionada
         typeof data.ageGroup !== "number" ||
         typeof data.sex !== "number"
       ) {
@@ -48,33 +49,42 @@ const coapServer = coap.createServer((req, res) => {
 
       const temperature = data.temperature;
       const heartbeat = data.heartbeat;
+      const oximetry = data.oximetry;
 
-      if (isNaN(temperature) || isNaN(heartbeat)) {
+      if (isNaN(temperature) || isNaN(heartbeat) || isNaN(oximetry)) {
         res.setOption("Content-Format", "application/json");
         res.end(
           JSON.stringify({
             status: "error",
-            message: "Invalid temperature or heartbeat value",
+            message: "Invalid temperature, heartbeat or oximetry value",
           })
         );
         return;
       }
 
+      // Atualiza medições de temperatura
       if (tempMeasurements.length >= 5) {
-        tempMeasurements.shift(); // Remove the oldest
+        tempMeasurements.shift(); // Remove o mais antigo
       }
-      tempMeasurements.push(temperature); // Add the new temperature
+      tempMeasurements.push(temperature); // Adiciona o novo valor
 
-      // Update heartbeat measurements
+      // Atualiza medições de batimentos
       if (heartbeatMeasurements.length >= 5) {
-        heartbeatMeasurements.shift(); // Remove the oldest
+        heartbeatMeasurements.shift();
       }
-      heartbeatMeasurements.push(heartbeat); // Add the new heartbeat
+      heartbeatMeasurements.push(heartbeat);
+
+      // Atualiza medições de oximetria
+      if (oximetryMeasurements.length >= 5) {
+        oximetryMeasurements.shift();
+      }
+      oximetryMeasurements.push(oximetry);
 
       console.log("Updated Temperature Measurements:", tempMeasurements);
       console.log("Updated Heartbeat Measurements:", heartbeatMeasurements);
+      console.log("Updated Oximetry Measurements:", oximetryMeasurements);
 
-      // Calculate averages
+      // Calcula as médias
       const tempAverage = Number(
         (
           tempMeasurements.reduce((sum, temp) => sum + temp, 0) /
@@ -87,10 +97,16 @@ const coapServer = coap.createServer((req, res) => {
           heartbeatMeasurements.length
       );
 
+      const oximetryAverage = Math.round(
+        oximetryMeasurements.reduce((sum, value) => sum + value, 0) /
+          oximetryMeasurements.length
+      );
+
       console.log(`Current Temperature Average: ${tempAverage}°C`);
       console.log(`Current Heartbeat Average: ${heartbeatAverage}`);
+      console.log(`Current Oximetry Average: ${oximetryAverage}`);
 
-      // Respond quickly to prevent timeouts
+      // Responde rapidamente para evitar timeout
       res.setOption("Content-Format", "application/json");
       res.end(
         JSON.stringify({
@@ -99,11 +115,11 @@ const coapServer = coap.createServer((req, res) => {
         })
       );
 
-      // Asynchronous processing for Firebase operations
+      // Processamento assíncrono para salvar os dados no Firebase
       (async () => {
         try {
-          // Save the temperature and heartbeat data to Firebase
-          const sensorPath = `sensors/data`;
+          // Salva os dados de temperatura e batimentos no Firebase
+          const sensorPath = `sensors/database`;
           const ref = db.ref(sensorPath);
           const timestamp = Math.floor(Date.now() / 1000);
 
@@ -111,6 +127,7 @@ const coapServer = coap.createServer((req, res) => {
             temperature: tempAverage,
             sex: data.sex,
             ageGroup: data.ageGroup,
+            oximetry: oximetryAverage,
             timestamp: timestamp,
             heartbeat: heartbeatAverage,
           };
@@ -120,6 +137,7 @@ const coapServer = coap.createServer((req, res) => {
             console.log("Data saved to Firebase:", {
               temperature,
               heartbeat,
+              oximetry: oximetryAverage,
             });
           }
         } catch (error) {

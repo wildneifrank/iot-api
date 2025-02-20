@@ -23,7 +23,7 @@ export namespace API {
       temperature: number;
       ageGroup: number;
       sex: number;
-      timestamp: number;
+      timestamp?: number;
       oximetry: number;
       heartbeat: number;
     }
