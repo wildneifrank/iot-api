@@ -33,7 +33,7 @@ const coapServer = coap.createServer((req, res) => {
         !data ||
         typeof data.temperature !== "number" ||
         typeof data.heartbeat !== "number" ||
-        typeof data.oximetry !== "number" || // Validação adicionada
+        typeof data.oximetry !== "number" ||
         typeof data.ageGroup !== "number" ||
         typeof data.sex !== "number"
       ) {
@@ -132,7 +132,11 @@ const coapServer = coap.createServer((req, res) => {
             heartbeat: heartbeatAverage,
           };
 
-          if (heartbeatAverage > 45) {
+          if (
+            heartbeatAverage > 45 &&
+            oximetryAverage > 90 &&
+            tempAverage > 15
+          ) {
             await ref.push(sensorData);
             console.log("Data saved to Firebase:", {
               temperature,

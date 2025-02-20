@@ -1,4 +1,6 @@
 import SensorController from "controllers/sensor_controller";
+import UserController from "controllers/user_controller";
+
 import { Router } from "express";
 
 const routes = Router();

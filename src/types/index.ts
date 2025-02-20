@@ -11,13 +11,9 @@ export namespace API {
       name: string;
       email: string;
       tel: string;
-    }
-    export interface IDog {
-      ownerKey: string;
-      name: string;
-      age: number;
-      breed: string;
-      sensors: string[];
+      address: string;
+      sex: number;
+      ageRange: number;
     }
     export interface ISensor {
       temperature: number;
@@ -60,10 +56,6 @@ export namespace API {
       USER_DELETED = "User deleted successfully",
       USER_NOT_FOUND = "User not found",
       USER_ALREADY_EXISTS = "User with this email already exists",
-      DOG_CREATED = "Dog created successfully",
-      DOG_UPDATED = "Dog updated successfully",
-      DOG_DELETED = "Dog deleted successfully",
-      DOG_NOT_FOUND = "Dog not found",
     }
 
     /**
@@ -103,19 +95,6 @@ export namespace API {
           email: string;
         };
       }
-      export interface ICreateDog extends Request {
-        body: IDog;
-      }
-      export interface IGetDog extends Request {
-        params: {
-          ownerKey: string;
-        };
-      }
-      export interface IUpdateDog extends Request {
-        body: {
-          key: string;
-        } & Partial<IDog>;
-      }
     }
 
     /**
@@ -149,8 +128,7 @@ export namespace API {
      */
     export enum DataPaths {
       SENSORS = "sensors/database",
-      USERS = "iot/users",
-      DOGS = "iot/dogs",
+      USERS = "sensors/user",
     }
   }
 }
